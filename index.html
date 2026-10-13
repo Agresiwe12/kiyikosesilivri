@@ -21,25 +21,31 @@
 
  
   <!-- Üst Bar (Header) -->
-  <header class="bg-white border-b border-slate-200 sticky top-0 z-30 px-3 py-2.5 shadow-sm">
+  <header class="bg-white/95 backdrop-blur-md border-b border-slate-200/80 sticky top-0 z-30 px-3.5 py-2.5 shadow-[0_2px_10px_rgba(0,0,0,0.03)]">
     <div class="max-w-md mx-auto flex items-center justify-between gap-2">
-      <!-- Sol Taraf: Logo ve Başlık -->
-      <div class="flex items-center gap-2 min-w-0">
-        <img src="Logo.png.jfif" alt="KıyıKöşe Silivri" class="w-9 h-9 rounded-lg object-contain bg-white shadow-sm border border-slate-100 flex-shrink-0">
-        <div class="truncate">
-          <h1 class="text-sm font-bold text-slate-900 leading-tight truncate">KıyıKöşe <span class="text-sky-600">Silivri</span></h1>
-          <p class="text-[10px] text-slate-500 font-medium truncate">Silivri'nin her kıyısı, her köşesi burada </p>
+      <!-- Sol Taraf: Logo ve Estetik Başlık -->
+      <div class="flex items-center gap-2.5 min-w-0">
+        <div class="relative flex-shrink-0">
+          <img src="logo.png.jfif" alt="KıyıKöşe Silivri" class="w-10 h-10 rounded-xl object-contain bg-white shadow-sm border border-slate-100 p-0.5">
+          <span class="absolute -bottom-0.5 -right-0.5 w-2.5 h-2.5 bg-emerald-500 border-2 border-white rounded-full"></span>
+        </div>
+        <div class="min-w-0 flex flex-col justify-center">
+          <div class="flex items-baseline gap-1 leading-none">
+            <span class="text-[15px] font-extrabold tracking-tight text-slate-900">Kıyı<span class="text-emerald-600">Köşe</span></span>
+            <span class="text-[11px] font-bold text-sky-600 uppercase tracking-wider bg-sky-50 px-1.5 py-0.5 rounded-md border border-sky-100">Silivri</span>
+          </div>
+          <p class="text-[10px] text-slate-400 font-medium tracking-tight mt-0.5 truncate">Yerel Meydan & Pazar</p>
         </div>
       </div>
       
-      <!-- Sağ Taraf: Profil ve Buton -->
+      <!-- Sağ Taraf: Profil ve Paylaş Butonu -->
       <div class="flex items-center gap-1.5 flex-shrink-0">
         <div id="userStatusArea">
-          <button onclick="openAuthModal('login')" class="text-xs font-semibold text-sky-700 bg-sky-50 hover:bg-sky-100 border border-sky-200 px-2 py-1 rounded-full transition">
+          <button onclick="openAuthModal('login')" class="text-xs font-semibold text-sky-700 bg-sky-50 hover:bg-sky-100 border border-sky-200 px-2.5 py-1.5 rounded-full transition">
             Giriş Yap
           </button>
         </div>
-        <button onclick="openModal()" class="bg-sky-600 hover:bg-sky-700 text-white text-xs font-semibold px-2.5 py-1.5 rounded-full flex items-center gap-1 shadow-sm transition">
+        <button onclick="openModal()" class="bg-gradient-to-r from-sky-600 to-sky-700 hover:from-sky-700 hover:to-sky-800 text-white text-xs font-semibold px-3 py-1.5 rounded-full flex items-center gap-1.5 shadow-sm transition active:scale-95">
           <i class="fa-solid fa-plus text-[10px]"></i> <span id="addBtnText">Paylaş</span>
         </button>
       </div>
