@@ -4,6 +4,14 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>KıyıKöşe Silivri - Mahalle, Pazar & Esnaf Platformu</title>
+  
+  <!-- PWA Meta Etiketleri -->
+  <link rel="manifest" href="manifest.json">
+  <meta name="theme-color" content="#0284c7">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="default">
+  <meta name="apple-mobile-web-app-title" content="KıyıKöşe">
+
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@500;600;700;800&display=swap" rel="stylesheet">
@@ -62,12 +70,27 @@
     </div>
   </div>
 
+  <!-- PWA Uygulamayı Yükle Banner'ı (Telefonda ilk girişte çıkar) -->
+  <div id="pwaInstallBanner" class="hidden bg-slate-900 text-white px-4 py-2 text-xs">
+    <div class="max-w-md mx-auto flex items-center justify-between">
+      <span class="flex items-center gap-2"><i class="fa-solid fa-mobile-screen text-sky-400"></i> KıyıKöşe'yi telefona uygulama olarak yükle</span>
+      <button onclick="installPWA()" class="bg-sky-600 hover:bg-sky-500 text-white font-bold px-2.5 py-1 rounded text-[11px]">Yükle</button>
+    </div>
+  </div>
+
   <!-- Ana İçerik Konteyneri -->
-  <main class="max-w-md mx-auto px-4 pt-3">
+  <main class="max-w-md mx-auto px-4 pt-3 space-y-3">
     
+    <!-- 1. ÖZELLİK: CANLI ARAMA ÇUBUĞU -->
+    <div class="relative">
+      <i class="fa-solid fa-magnifying-glass absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 text-xs"></i>
+      <input id="searchInput" type="text" oninput="handleSearch(this.value)" placeholder="Mahallede, pazarda veya esnafta ara..." class="w-full bg-white border border-slate-200/90 rounded-xl pl-9 pr-8 py-2 text-xs outline-none focus:border-sky-500 shadow-sm transition placeholder:text-slate-400">
+      <button id="searchClearBtn" onclick="clearSearch()" class="hidden absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 text-xs">✕</button>
+    </div>
+
     <!-- Mahalle & Bölge Filtreleri -->
-    <div class="flex gap-2 overflow-x-auto pb-2 scrollbar-none text-xs font-medium">
-      <button onclick="filterContent('Tümü')" class="filter-btn active bg-slate-900 text-white px-3 py-1.5 rounded-full whitespace-nowrap">Tüm Silivri</button>
+    <div class="flex gap-2 overflow-x-auto pb-1 scrollbar-none text-xs font-medium">
+      <button onclick="filterContent('Tümü')" class="filter-btn active bg-slate-900 text-white px-3 py-1.5 rounded-full whitespace-nowrap shadow-sm">Tüm Silivri</button>
       <button onclick="filterContent('Merkez')" class="filter-btn bg-white border border-slate-200 text-slate-700 px-3 py-1.5 rounded-full whitespace-nowrap">Merkez / Sahil</button>
       <button onclick="filterContent('Selimpaşa')" class="filter-btn bg-white border border-slate-200 text-slate-700 px-3 py-1.5 rounded-full whitespace-nowrap">Selimpaşa</button>
       <button onclick="filterContent('Gümüşyaka')" class="filter-btn bg-white border border-slate-200 text-slate-700 px-3 py-1.5 rounded-full whitespace-nowrap">Gümüşyaka</button>
@@ -78,7 +101,7 @@
     </div>
 
     <!-- 1. SEKME: MEYDAN -->
-    <section id="tab-meydan" class="tab-content mt-3 space-y-3">
+    <section id="tab-meydan" class="tab-content space-y-3">
       <div id="posts-container" class="space-y-3">
         <div class="bg-white rounded-xl p-5 border border-slate-200 text-center text-xs text-slate-500 shadow-sm">
           Bu bölgede henüz paylaşım yok. İlk notu siz bırakın!
@@ -87,11 +110,22 @@
     </section>
 
     <!-- 2. SEKME: PAZAR -->
-    <section id="tab-pazar" class="tab-content mt-3 hidden">
-      <div class="bg-emerald-50 border border-emerald-100 p-3 rounded-xl mb-3 flex items-center justify-between text-xs text-emerald-800">
+    <section id="tab-pazar" class="tab-content hidden space-y-3">
+      <div class="bg-emerald-50 border border-emerald-100 p-3 rounded-xl flex items-center justify-between text-xs text-emerald-800">
         <span><i class="fa-solid fa-basket-shopping text-emerald-600 mr-1"></i> Aracısız yerel pazar</span>
         <button onclick="openModal('pazar')" class="font-bold underline text-emerald-900">İlan Ekle</button>
       </div>
+
+      <!-- 2. ÖZELLİK: PAZAR SIRALAMA FİLTRELERİ -->
+      <div class="flex items-center justify-between text-xs px-1">
+        <span class="text-slate-400 text-[11px] font-medium"><i class="fa-solid fa-arrow-down-short-wide mr-1"></i> Sırala:</span>
+        <div class="flex gap-1.5">
+          <button onclick="setMarketSort('newest')" id="sortBtn-newest" class="sort-btn bg-slate-900 text-white px-2.5 py-1 rounded-lg text-[11px] font-semibold">En Yeniler</button>
+          <button onclick="setMarketSort('price-asc')" id="sortBtn-price-asc" class="sort-btn bg-white border border-slate-200 text-slate-600 px-2.5 py-1 rounded-lg text-[11px] font-medium">En Ucuz ₺</button>
+          <button onclick="setMarketSort('price-desc')" id="sortBtn-price-desc" class="sort-btn bg-white border border-slate-200 text-slate-600 px-2.5 py-1 rounded-lg text-[11px] font-medium">En Yüksek ₺</button>
+        </div>
+      </div>
+
       <div id="market-container" class="grid grid-cols-2 gap-3">
         <div class="bg-white rounded-xl p-5 border border-slate-200 text-center text-xs text-slate-500 col-span-2 shadow-sm">
           Bu bölgede henüz pazar ilanı yok.
@@ -100,8 +134,8 @@
     </section>
 
     <!-- 3. SEKME: ESNAF -->
-    <section id="tab-esnaf" class="tab-content mt-3 hidden space-y-3">
-      <div class="bg-amber-50 border border-amber-100 p-3 rounded-xl mb-3 flex items-center justify-between text-xs text-amber-800">
+    <section id="tab-esnaf" class="tab-content hidden space-y-3">
+      <div class="bg-amber-50 border border-amber-100 p-3 rounded-xl flex items-center justify-between text-xs text-amber-800">
         <span><i class="fa-solid fa-medal text-amber-600 mr-1"></i> Komşu ustalar & esnaflar</span>
         <button onclick="openModal('esnaf')" class="font-bold underline text-amber-900">Kendini Ekle</button>
       </div>
@@ -114,7 +148,7 @@
 
   </main>
 
-  <!-- ÜYELİK & GİRİŞ MODALI (T.C. KİMLİK KONTROLLÜ) -->
+  <!-- ÜYELİK & GİRİŞ MODALI -->
   <div id="authModal" class="fixed inset-0 bg-black/50 z-50 hidden flex items-end sm:items-center justify-center p-0 sm:p-4">
     <div class="bg-white w-full max-w-md rounded-t-2xl sm:rounded-2xl p-5 shadow-2xl animate-fade-in max-h-[90vh] overflow-y-auto">
       <div class="flex justify-between items-center mb-3">
@@ -127,7 +161,6 @@
         <button type="button" onclick="switchAuthTab('register')" id="authTabBtnRegister" class="flex-1 py-1.5 rounded-lg bg-slate-50 text-slate-600 font-medium">T.C. ile Kayıt Ol</button>
       </div>
 
-      <!-- GİRİŞ FORMU -->
       <form id="form-login" onsubmit="event.preventDefault(); handleLogin();" class="space-y-3 text-xs">
         <div>
           <label class="block font-semibold text-slate-700 mb-1">E-posta Adresi</label>
@@ -140,7 +173,6 @@
         <button type="submit" id="loginSubmitBtn" class="w-full bg-sky-600 hover:bg-sky-700 text-white font-bold py-2.5 rounded-lg transition">Oturum Aç</button>
       </form>
 
-      <!-- KAYIT FORMU -->
       <form id="form-register" onsubmit="event.preventDefault(); handleRegister();" class="space-y-3 text-xs hidden">
         <div class="bg-blue-50 border border-blue-200 text-blue-900 rounded-lg p-2.5 text-[11px] leading-relaxed">
           <i class="fa-solid fa-shield-halved text-blue-600 mr-1"></i> KıyıKöşe Silivri güvenliği için üyelikler resmi T.C. Kimlik algoritması ile doğrulanır.
@@ -184,7 +216,6 @@
         <button onclick="closeModal()" class="text-slate-400 hover:text-slate-600 text-lg">✕</button>
       </div>
       
-      <!-- Sekme Seçici -->
       <div class="flex gap-2 border-b border-slate-100 pb-3 mb-3 text-xs">
         <button type="button" onclick="switchModalForm('meydan')" id="modalBtnMeydan" class="flex-1 py-1.5 rounded-lg bg-sky-50 text-sky-700 font-bold">Meydan Notu</button>
         <button type="button" onclick="switchModalForm('pazar')" id="modalBtnPazar" class="flex-1 py-1.5 rounded-lg bg-slate-50 text-slate-600 font-medium">Pazar İlanı</button>
@@ -308,30 +339,51 @@
     const SUPABASE_URL = 'https://vsdrfmdprlpcshcgqvxm.supabase.co';
     const SUPABASE_KEY = 'sb_publishable_AqSPfSbaoFRQnCNiQGr3Dg_Lf5ztqvk';
     
+    // 3. ÖZELLİK: YÖNETİCİ (ADMİN) TANIMI
+    // Giriş yapan hesabın e-postası veya rolü admin ise silme yetkisi kazanır.
+    const ADMIN_EMAILS = ['admin@kiyikosesilivri.com', 'aliakgul86@gmail.com', 'eahomeconcept@gmail.com'];
+
     let db = null;
     try {
       if (window.supabase && typeof window.supabase.createClient === 'function') {
         db = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
       }
-    } catch (err) {
-      console.warn('Supabase client başlatma:', err);
-    }
+    } catch (err) { console.warn('Supabase başlatma:', err); }
 
     let currentUser = null;
+    let isAdmin = false;
 
-    // FOTOĞRAF ÖNİZLEME YARDIMCISI
+    // 4. ÖZELLİK: PWA KURULUM DESTEĞİ
+    let deferredPrompt = null;
+    window.addEventListener('beforeinstallprompt', (e) => {
+      e.preventDefault();
+      deferredPrompt = e;
+      const banner = document.getElementById('pwaInstallBanner');
+      if (banner) banner.classList.remove('hidden');
+    });
+
+    async function installPWA() {
+      if (deferredPrompt) {
+        deferredPrompt.prompt();
+        const { outcome } = await deferredPrompt.userChoice;
+        if (outcome === 'accepted') {
+          document.getElementById('pwaInstallBanner').classList.add('hidden');
+        }
+        deferredPrompt = null;
+      }
+    }
+
+    // FOTOĞRAF ÖNİZLEME & BASE64
     function previewImage(input, previewId) {
       const preview = document.getElementById(previewId);
       if (input.files && input.files[0]) {
         const reader = new FileReader();
-        reader.onload = function(e) {
+        reader.onload = (e) => {
           preview.src = e.target.result;
           preview.classList.remove('hidden');
         };
         reader.readAsDataURL(input.files[0]);
-      } else {
-        preview.classList.add('hidden');
-      }
+      } else { preview.classList.add('hidden'); }
     }
 
     function fileToBase64(file) {
@@ -349,7 +401,6 @@
       const textEl = document.getElementById('pharmacyText');
       const cacheKey = 'kiyikose_silivri_pharmacy_data';
       const cacheTimeKey = 'kiyikose_silivri_pharmacy_time';
-      
       const cached = localStorage.getItem(cacheKey);
       const cachedTime = localStorage.getItem(cacheTimeKey);
       const now = new Date().getTime();
@@ -362,19 +413,13 @@
       try {
         const response = await fetch('/api/eczane');
         const result = await response.json();
-
         if (result && result.success && result.result && result.result.length > 0) {
           const first = result.result[0];
           localStorage.setItem(cacheKey, JSON.stringify(first));
           localStorage.setItem(cacheTimeKey, now.toString());
           renderPharmacyBadge(first);
-        } else {
-          fallbackPharmacy();
-        }
-      } catch (err) {
-        console.warn('Eczane API hatası:', err);
-        fallbackPharmacy();
-      }
+        } else { fallbackPharmacy(); }
+      } catch (err) { fallbackPharmacy(); }
     }
 
     function renderPharmacyBadge(pharmacy) {
@@ -382,7 +427,6 @@
       const name = pharmacy.name || 'Silivri Eczanesi';
       const dist = pharmacy.dist ? `(${pharmacy.dist})` : '';
       const phone = pharmacy.phone || '';
-      
       if (phone) {
         textEl.innerHTML = `Nöbetçi: <a href="tel:${phone}" class="font-bold underline text-sky-950 hover:text-sky-700" title="Aramak için tıkla">${name} Eczanesi ${dist}</a>`;
       } else {
@@ -400,17 +444,11 @@
       let lat = 41.0742, lon = 28.2482, label = "Silivri";
       if (navigator.geolocation) {
         navigator.geolocation.getCurrentPosition(
-          async (pos) => {
-            lat = pos.coords.latitude;
-            lon = pos.coords.longitude;
-            await getWeather(lat, lon, "Konumunuz");
-          },
+          async (pos) => { await getWeather(pos.coords.latitude, pos.coords.longitude, "Konumunuz"); },
           async () => { await getWeather(lat, lon, label); },
           { timeout: 5000 }
         );
-      } else {
-        await getWeather(lat, lon, label);
-      }
+      } else { await getWeather(lat, lon, label); }
     }
 
     async function getWeather(lat, lon, label) {
@@ -431,18 +469,14 @@
     function validateTC(tc) {
       if (!tc || tc.length !== 11 || !/^[0-9]+$/.test(tc)) return false;
       if (tc[0] === '0') return false;
-
       const digits = tc.split('').map(Number);
       const oddSum = digits[0] + digits[2] + digits[4] + digits[6] + digits[8];
       const evenSum = digits[1] + digits[3] + digits[5] + digits[7];
-
       const tenth = ((oddSum * 7) - evenSum) % 10;
       if (tenth < 0 ? tenth + 10 !== digits[9] : tenth !== digits[9]) return false;
-
       let totalSum = 0;
       for (let i = 0; i < 10; i++) totalSum += digits[i];
       if (totalSum % 10 !== digits[10]) return false;
-
       return true;
     }
 
@@ -464,9 +498,7 @@
         let html = '<option value="Tüm Silivri">Tüm Silivri Genelinde</option>';
         for (const [group, items] of Object.entries(SILIVRI_DISTRICTS)) {
           html += `<optgroup label="--- ${group} ---">`;
-          items.forEach(item => {
-            html += `<option value="${item}">${item}</option>`;
-          });
+          items.forEach(item => { html += `<option value="${item}">${item}</option>`; });
           html += '</optgroup>';
         }
         sel.innerHTML = html;
@@ -475,6 +507,8 @@
 
     let activeTab = 'meydan';
     let currentFilter = 'Tümü';
+    let searchQuery = '';
+    let marketSortOrder = 'newest';
     let postsData = [], marketData = [], businessData = [];
     let commentsCache = {};
 
@@ -488,16 +522,18 @@
       fetchBusinesses();
     }
 
-    // AUTH İŞLEMLERİ
+    // AUTH İŞLEMLERİ & ADMİN KONTROLÜ
     async function checkAuthSession() {
       if (!db) return;
       try {
         const { data: { session } } = await db.auth.getSession();
         if (session) {
           currentUser = session.user;
+          isAdmin = ADMIN_EMAILS.includes(currentUser.email) || currentUser.user_metadata?.is_admin === true;
           updateUserUI(currentUser);
         } else {
           currentUser = null;
+          isAdmin = false;
           updateUserUI(null);
         }
       } catch (e) { console.warn(e); }
@@ -512,6 +548,7 @@
           <div class="flex items-center gap-1.5 bg-emerald-50 border border-emerald-200 px-2.5 py-1 rounded-full text-xs font-semibold text-emerald-800">
             <i class="fa-solid fa-circle-check text-sky-500"></i>
             <span class="max-w-[80px] truncate">${fullName.split(' ')[0]}</span>
+            ${isAdmin ? '<span class="bg-red-600 text-white text-[9px] px-1 rounded font-bold">Admin</span>' : ''}
             <button onclick="handleLogout()" class="text-slate-400 hover:text-red-500 ml-1" title="Çıkış Yap"><i class="fa-solid fa-arrow-right-from-bracket"></i></button>
           </div>
         `;
@@ -522,6 +559,7 @@
           </button>
         `;
       }
+      renderAllTabs();
     }
 
     function openAuthModal(defaultTab = 'login') {
@@ -546,10 +584,7 @@
       const email = document.getElementById('regEmail').value.trim();
       const password = document.getElementById('regPassword').value;
 
-      if (!validateTC(tc)) {
-        alert("Geçersiz T.C. Kimlik Numarası!");
-        return;
-      }
+      if (!validateTC(tc)) return alert("Geçersiz T.C. Kimlik Numarası!");
 
       const btn = document.getElementById('regSubmitBtn');
       btn.innerText = "Doğrulanıyor...";
@@ -558,17 +593,14 @@
       try {
         const { error } = await db.auth.signUp({
           email, password,
-          options: {
-            data: { first_name: name, last_name: surname, full_name: `${name} ${surname}`, birth_year: birthYear, is_tc_verified: true }
-          }
+          options: { data: { first_name: name, last_name: surname, full_name: `${name} ${surname}`, birth_year: birthYear, is_tc_verified: true } }
         });
         if (error) throw error;
         alert("Kayıt başarılı! Şimdi giriş yapabilirsiniz.");
         switchAuthTab('login');
         document.getElementById('loginEmail').value = email;
-      } catch (err) {
-        alert("Kayıt hatası: " + err.message);
-      } finally {
+      } catch (err) { alert("Kayıt hatası: " + err.message); }
+      finally {
         btn.innerText = "T.C. Doğrula & Kayıt Ol";
         btn.disabled = false;
       }
@@ -585,11 +617,11 @@
         const { data, error } = await db.auth.signInWithPassword({ email, password });
         if (error) throw error;
         currentUser = data.user;
+        isAdmin = ADMIN_EMAILS.includes(currentUser.email) || currentUser.user_metadata?.is_admin === true;
         updateUserUI(currentUser);
         closeAuthModal();
-      } catch (err) {
-        alert("Giriş hatası: " + err.message);
-      } finally {
+      } catch (err) { alert("Giriş hatası: " + err.message); }
+      finally {
         btn.innerText = "Oturum Aç";
         btn.disabled = false;
       }
@@ -599,11 +631,64 @@
       if (confirm("Çıkış yapmak istediğinize emin misiniz?")) {
         await db.auth.signOut();
         currentUser = null;
+        isAdmin = false;
         updateUserUI(null);
       }
     }
 
-    // VERİ ÇEKME & LİSTELEME
+    // 1. ÖZELLİK: ARAMA İŞLEMLERİ
+    function handleSearch(val) {
+      searchQuery = (val || '').toLowerCase().trim();
+      document.getElementById('searchClearBtn').classList.toggle('hidden', !searchQuery);
+      renderAllTabs();
+    }
+
+    function clearSearch() {
+      document.getElementById('searchInput').value = '';
+      searchQuery = '';
+      document.getElementById('searchClearBtn').classList.add('hidden');
+      renderAllTabs();
+    }
+
+    // 2. ÖZELLİK: PAZAR SIRALAMA FİLTRESİ
+    function setMarketSort(sortType) {
+      marketSortOrder = sortType;
+      ['newest', 'price-asc', 'price-desc'].forEach(t => {
+        const btn = document.getElementById('sortBtn-' + t);
+        if (btn) {
+          btn.className = t === sortType 
+            ? 'sort-btn bg-slate-900 text-white px-2.5 py-1 rounded-lg text-[11px] font-semibold' 
+            : 'sort-btn bg-white border border-slate-200 text-slate-600 px-2.5 py-1 rounded-lg text-[11px] font-medium';
+        }
+      });
+      renderMarket();
+    }
+
+    // 3. ÖZELLİK: ADMİN SİLME İŞLEMİ
+    async function deleteItem(table, id, title) {
+      if (!confirm(`"${title || 'Bu öğeyi'}" kalıcı olarak silmek istediğinize emin misiniz?`)) return;
+
+      if (table === 'posts') postsData = postsData.filter(p => p.id !== id);
+      else if (table === 'market_items') marketData = marketData.filter(m => m.id !== id);
+      else if (table === 'businesses') businessData = businessData.filter(b => b.id !== id);
+
+      renderAllTabs();
+
+      if (db && id) {
+        try {
+          const { error } = await db.from(table).delete().eq('id', id);
+          if (error) alert("Silme hatası: " + error.message);
+        } catch (e) { console.warn(e); }
+      }
+    }
+
+    // VERİLERİ YENİLEME
+    function renderAllTabs() {
+      renderPosts();
+      renderMarket();
+      renderBusinesses();
+    }
+
     async function fetchPosts() {
       try {
         if (!db) { renderPosts(); return; }
@@ -643,7 +728,7 @@
       return itemNeighborhood.toLowerCase().includes(currentFilter.toLowerCase());
     }
 
-    // ETKİLEŞİM: BEĞENİ ARTIRMA
+    // ETKİLEŞİM: BEĞENİ & YORUM
     async function handleLike(postId, idx) {
       const p = postsData[idx];
       p.likes_count = (p.likes_count || 0) + 1;
@@ -660,7 +745,6 @@
       }
     }
 
-    // ETKİLEŞİM: YORUM ALANI AÇMA & GÖNDERME
     function toggleCommentBox(idx) {
       const box = document.getElementById(`comment-box-${idx}`);
       if (box) box.classList.toggle('hidden');
@@ -679,9 +763,7 @@
       input.value = '';
 
       if (db && postId) {
-        try {
-          await db.from('post_comments').insert([{ post_id: postId, author, content: text }]);
-        } catch (e) { console.warn(e); }
+        try { await db.from('post_comments').insert([{ post_id: postId, author, content: text }]); } catch (e) {}
       }
     }
 
@@ -700,18 +782,36 @@
       }
     }
 
+    // 1. SEKME RENDER (Arama + Admin Silme)
     function renderPosts() {
       const container = document.getElementById('posts-container');
-      const filtered = postsData.filter(p => matchesFilter(p.neighborhood));
+      let filtered = postsData.filter(p => matchesFilter(p.neighborhood));
+
+      if (searchQuery) {
+        filtered = filtered.filter(p => 
+          (p.content || '').toLowerCase().includes(searchQuery) ||
+          (p.category || '').toLowerCase().includes(searchQuery) ||
+          (p.neighborhood || '').toLowerCase().includes(searchQuery)
+        );
+      }
+
       if (!filtered.length) {
-        container.innerHTML = '<div class="bg-white rounded-xl p-5 border border-slate-200 text-center text-xs text-slate-500 shadow-sm">Bu bölgede henüz paylaşım yok. İlk notu siz bırakın!</div>';
+        container.innerHTML = '<div class="bg-white rounded-xl p-5 border border-slate-200 text-center text-xs text-slate-500 shadow-sm">Aramanıza veya bölgenize uygun not bulunamadı.</div>';
         return;
       }
+
       container.innerHTML = filtered.map((p, idx) => {
         const comments = commentsCache[idx] || [];
         return `
-        <div class="bg-white rounded-xl p-4 border border-slate-200/80 shadow-[0_1px_3px_rgba(0,0,0,0.04)]">
-          <div class="flex items-center justify-between mb-2">
+        <div class="bg-white rounded-xl p-4 border border-slate-200/80 shadow-[0_1px_3px_rgba(0,0,0,0.04)] relative">
+          <!-- Admin Sil Butonu -->
+          ${isAdmin ? `
+            <button onclick="deleteItem('posts', '${p.id||''}', 'Not')" class="absolute top-3 right-3 text-red-500 hover:text-red-700 bg-red-50 hover:bg-red-100 p-1.5 rounded-lg text-xs" title="Yönetici Olarak Sil">
+              <i class="fa-solid fa-trash-can"></i>
+            </button>
+          ` : ''}
+
+          <div class="flex items-center justify-between mb-2 ${isAdmin ? 'pr-8' : ''}">
             <div class="flex items-center gap-2">
               <div class="w-7 h-7 rounded-full bg-sky-100 text-sky-700 flex items-center justify-center font-bold text-xs">${(p.category||'S')[0].toUpperCase()}</div>
               <div>
@@ -748,7 +848,7 @@
             <span class="text-[10px] text-slate-400">Silivri Meydan</span>
           </div>
 
-          <!-- Yorum Kutusu (Açılır / Kapanır) -->
+          <!-- Yorum Kutusu -->
           <div id="comment-box-${idx}" class="mt-3 pt-2.5 border-t border-slate-100 space-y-2 hidden">
             <div id="comments-list-${idx}" class="space-y-1.5 max-h-40 overflow-y-auto">
               ${comments.map(c => `
@@ -770,19 +870,45 @@
       }).join('');
     }
 
+    // 2. SEKME RENDER (Arama + Fiyat Sıralaması + Admin Silme)
     function renderMarket() {
       const container = document.getElementById('market-container');
-      const filtered = marketData.filter(m => matchesFilter(m.neighborhood));
+      let filtered = marketData.filter(m => matchesFilter(m.neighborhood));
+
+      if (searchQuery) {
+        filtered = filtered.filter(m => 
+          (m.title || '').toLowerCase().includes(searchQuery) ||
+          (m.description || '').toLowerCase().includes(searchQuery) ||
+          (m.category || '').toLowerCase().includes(searchQuery) ||
+          (m.neighborhood || '').toLowerCase().includes(searchQuery)
+        );
+      }
+
+      // Sıralama Mantığı
+      if (marketSortOrder === 'price-asc') {
+        filtered.sort((a, b) => Number(a.price) - Number(b.price));
+      } else if (marketSortOrder === 'price-desc') {
+        filtered.sort((a, b) => Number(b.price) - Number(a.price));
+      }
+
       if (!filtered.length) {
-        container.innerHTML = '<div class="bg-white rounded-xl p-5 border border-slate-200 text-center text-xs text-slate-500 col-span-2 shadow-sm">Bu bölgede henüz pazar ilanı yok.</div>';
+        container.innerHTML = '<div class="bg-white rounded-xl p-5 border border-slate-200 text-center text-xs text-slate-500 col-span-2 shadow-sm">Aramanıza veya bölgenize uygun pazar ilanı bulunamadı.</div>';
         return;
       }
+
       container.innerHTML = filtered.map(m => {
         const cleanPhone = (m.phone || '').replace(/[^0-9]/g, '');
-        const waLink = cleanPhone ? `https://wa.me/90${cleanPhone.startsWith('0') ? cleanPhone.slice(1) : cleanPhone}?text=${encodeURIComponent(`Merhaba, KıyıKöşe Silivri üzerinden ilanınızı gördüm: "${m.title}" için yazıyorum.`)}` : null;
+        const waLink = cleanPhone ? `https://wa.me/90${cleanPhone.startsWith('0') ? cleanPhone.slice(1) : cleanPhone}?text=${encodeURIComponent(`Merhaba, KıyıKöşe Silivri üzerinden "${m.title}" ilanınız için yazıyorum.`)}` : null;
 
         return `
-        <div class="bg-white rounded-xl border border-slate-200 overflow-hidden shadow-sm flex flex-col justify-between">
+        <div class="bg-white rounded-xl border border-slate-200 overflow-hidden shadow-sm flex flex-col justify-between relative">
+          <!-- Admin Sil Butonu -->
+          ${isAdmin ? `
+            <button onclick="deleteItem('market_items', '${m.id\vert{}\vert{}''}', '${m.title}')" class="absolute top-2 right-2 z-10 text-red-500 hover:text-red-700 bg-white/90 p-1.5 rounded-lg text-xs shadow" title="İlanı Sil">
+              <i class="fa-solid fa-trash-can"></i>
+            </button>
+          ` : ''}
+
           ${m.image_url ? `
             <div class="h-32 w-full bg-slate-100 overflow-hidden border-b border-slate-100">
               <img src="${m.image_url}" alt="${m.title}" class="w-full h-full object-cover">
@@ -819,13 +945,24 @@
       }).join('');
     }
 
+    // 3. SEKME RENDER (Arama + Admin Silme)
     function renderBusinesses() {
       const container = document.getElementById('business-container');
-      const filtered = businessData.filter(b => matchesFilter(b.neighborhood));
+      let filtered = businessData.filter(b => matchesFilter(b.neighborhood));
+
+      if (searchQuery) {
+        filtered = filtered.filter(b => 
+          (b.name || '').toLowerCase().includes(searchQuery) ||
+          (b.category || '').toLowerCase().includes(searchQuery) ||
+          (b.neighborhood || '').toLowerCase().includes(searchQuery)
+        );
+      }
+
       if (!filtered.length) {
-        container.innerHTML = '<div class="bg-white rounded-xl p-5 border border-slate-200 text-center text-xs text-slate-500 shadow-sm">Bu bölgede kayıtlı esnaf bulunamadı.</div>';
+        container.innerHTML = '<div class="bg-white rounded-xl p-5 border border-slate-200 text-center text-xs text-slate-500 shadow-sm">Aramanıza uygun esnaf bulunamadı.</div>';
         return;
       }
+
       container.innerHTML = filtered.map(b => {
         const cleanPhone = (b.phone || '').replace(/[^0-9]/g, '');
         const waLink = cleanPhone ? `https://wa.me/90${cleanPhone.startsWith('0') ? cleanPhone.slice(1) : cleanPhone}?text=${encodeURIComponent(`Merhaba ${b.name}, KıyıKöşe Silivri rehberinden size ulaşıyorum.`)}` : null;
@@ -846,8 +983,12 @@
             </div>
           </div>
 
-          <!-- İletişim Butonları: WhatsApp & Arama -->
           <div class="flex items-center gap-1.5 flex-shrink-0">
+            ${isAdmin ? `
+              <button onclick="deleteItem('businesses', '${b.id\vert{}\vert{}''}', '${b.name}')" class="text-red-500 hover:text-red-700 bg-red-50 hover:bg-red-100 w-7 h-7 rounded-full flex items-center justify-center text-xs mr-1" title="Esnafı Sil">
+                <i class="fa-solid fa-trash-can text-[10px]"></i>
+              </button>
+            ` : ''}
             ${waLink ? `
               <a href="${waLink}" target="_blank" class="bg-emerald-500 hover:bg-emerald-600 text-white w-7 h-7 rounded-full flex items-center justify-center text-xs shadow-sm transition" title="WhatsApp'tan Yaz">
                 <i class="fa-brands fa-whatsapp"></i>
@@ -898,9 +1039,7 @@
         btn.classList.toggle('bg-white', !isActive);
         btn.classList.toggle('text-slate-700', !isActive);
       });
-      renderPosts();
-      renderMarket();
-      renderBusinesses();
+      renderAllTabs();
     }
 
     function openModal(defaultForm = activeTab) {
@@ -912,79 +1051,4 @@
     function switchModalForm(formName) {
       ['meydan', 'pazar', 'esnaf'].forEach(f => {
         document.getElementById('form-' + f).classList.toggle('hidden', f !== formName);
-        const btn = document.getElementById('modalBtn' + f.charAt(0).toUpperCase() + f.slice(1));
-        btn.className = f === formName ? 'flex-1 py-1.5 rounded-lg bg-sky-50 text-sky-700 font-bold' : 'flex-1 py-1.5 rounded-lg bg-slate-50 text-slate-600 font-medium';
-      });
-      document.getElementById('modalTitle').innerText = formName === 'meydan' ? 'Mahalle Notu Bırak' : formName === 'pazar' ? 'Yeni Pazar İlanı' : 'Esnaf / Usta Ekle';
-    }
-
-    // FORM GÖNDERİMLERİ (FOTOĞRAF DESTEKLİ)
-    async function submitPost() {
-      const name = document.getElementById('postAuthor').value;
-      const nh = document.getElementById('postNeighborhood').value;
-      const content = document.getElementById('postContent').value;
-      const file = document.getElementById('postImageInput').files[0];
-      const imageUrl = await fileToBase64(file);
-      
-      const newPost = { category: name, neighborhood: nh, content, image_url: imageUrl, likes_count: 0 };
-      postsData.unshift(newPost);
-      renderPosts();
-      closeModal();
-      document.getElementById('postContent').value = '';
-      document.getElementById('postImageInput').value = '';
-      document.getElementById('postImagePreview').classList.add('hidden');
-
-      if (db) {
-        try { await db.from('posts').insert([newPost]); } catch (e) { console.warn(e); }
-      }
-    }
-
-    async function submitMarketItem() {
-      const title = document.getElementById('itemTitle').value;
-      const price = document.getElementById('itemPrice').value;
-      const cat = document.getElementById('itemCategory').value;
-      const nh = document.getElementById('itemNeighborhood').value;
-      const phone = document.getElementById('itemPhone').value;
-      const desc = document.getElementById('itemDesc').value;
-      const file = document.getElementById('itemImageInput').files[0];
-      const imageUrl = await fileToBase64(file);
-      
-      const newItem = { title, price: Number(price), category: cat, neighborhood: nh, phone, description: desc, image_url: imageUrl };
-      marketData.unshift(newItem);
-      renderMarket();
-      closeModal();
-      document.getElementById('itemTitle').value = '';
-      document.getElementById('itemPrice').value = '';
-      document.getElementById('itemPhone').value = '';
-      document.getElementById('itemImageInput').value = '';
-      document.getElementById('itemImagePreview').classList.add('hidden');
-      switchTab('pazar');
-
-      if (db) {
-        try { await db.from('market_items').insert([newItem]); } catch (e) { console.warn(e); }
-      }
-    }
-
-    async function submitBusiness() {
-      const name = document.getElementById('bizName').value;
-      const cat = document.getElementById('bizCategory').value;
-      const phone = document.getElementById('bizPhone').value;
-      const nh = document.getElementById('bizNeighborhood').value;
-      
-      const newBiz = { name, category: cat, phone, neighborhood: nh, rating: 5.0, review_count: 1, verified: true };
-      businessData.unshift(newBiz);
-      renderBusinesses();
-      closeModal();
-      document.getElementById('bizName').value = '';
-      document.getElementById('bizPhone').value = '';
-      switchTab('esnaf');
-
-      if (db) {
-        try { await db.from('businesses').insert([newBiz]); } catch (e) { console.warn(e); }
-      }
-    }
-
-    window.onload = loadAllData;
-  </script>
-</body>
-</html>
+        const btn =
