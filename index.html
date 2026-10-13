@@ -56,21 +56,23 @@
     </div>
   </header>
 
-  <!-- Hızlı Bilgi Bandı (Canlı Nöbetçi Eczane & Konuma Özel Canlı Hava Durumu) -->
+  <!-- Hızlı Bilgi Bandı -->
   <div class="bg-sky-50 border-b border-sky-100 px-4 py-2">
     <div class="max-w-md mx-auto flex items-center justify-between text-xs text-sky-900 gap-2">
       <div id="pharmacyBanner" class="flex items-center gap-1.5 font-medium truncate pr-1">
         <span class="inline-block w-2 h-2 rounded-full bg-emerald-500 animate-pulse flex-shrink-0"></span>
         <i class="fa-solid fa-kit-medical text-red-500 flex-shrink-0"></i>
-        <span id="pharmacyText" class="truncate font-medium">Nöbetçi Eczane yükleniyor...</span>
+        <span id="pharmacyText" class="truncate font-medium">
+          <a href="https://www.google.com/maps/search/Silivri+n%C3%B6bet%C3%A7i+eczane" target="_blank" class="hover:underline text-sky-950 font-semibold">Nöbetçi: Silivri Eczaneleri (Ara / Yol Tarifi)</a>
+        </span>
       </div>
       <span id="weatherBadge" class="text-[11px] text-sky-700 bg-sky-200/60 px-2 py-0.5 rounded-full font-semibold flex-shrink-0 flex items-center gap-1 whitespace-nowrap">
-        <i class="fa-solid fa-spinner fa-spin text-[10px]"></i> Hava durumu...
+        <i class="fa-solid fa-cloud-sun text-sky-600 mr-1"></i> Silivri 17°C
       </span>
     </div>
   </div>
 
-  <!-- PWA Uygulamayı Yükle Banner'ı (Telefonda ilk girişte çıkar) -->
+  <!-- PWA Uygulamayı Yükle Banner'ı -->
   <div id="pwaInstallBanner" class="hidden bg-slate-900 text-white px-4 py-2 text-xs">
     <div class="max-w-md mx-auto flex items-center justify-between">
       <span class="flex items-center gap-2"><i class="fa-solid fa-mobile-screen text-sky-400"></i> KıyıKöşe'yi telefona uygulama olarak yükle</span>
@@ -81,7 +83,7 @@
   <!-- Ana İçerik Konteyneri -->
   <main class="max-w-md mx-auto px-4 pt-3 space-y-3">
     
-    <!-- 1. ÖZELLİK: CANLI ARAMA ÇUBUĞU -->
+    <!-- CANLI ARAMA ÇUBUĞU -->
     <div class="relative">
       <i class="fa-solid fa-magnifying-glass absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 text-xs"></i>
       <input id="searchInput" type="text" oninput="handleSearch(this.value)" placeholder="Mahallede, pazarda veya esnafta ara..." class="w-full bg-white border border-slate-200/90 rounded-xl pl-9 pr-8 py-2 text-xs outline-none focus:border-sky-500 shadow-sm transition placeholder:text-slate-400">
@@ -116,7 +118,7 @@
         <button onclick="openModal('pazar')" class="font-bold underline text-emerald-900">İlan Ekle</button>
       </div>
 
-      <!-- 2. ÖZELLİK: PAZAR SIRALAMA FİLTRELERİ -->
+      <!-- PAZAR SIRALAMA FİLTRELERİ -->
       <div class="flex items-center justify-between text-xs px-1">
         <span class="text-slate-400 text-[11px] font-medium"><i class="fa-solid fa-arrow-down-short-wide mr-1"></i> Sırala:</span>
         <div class="flex gap-1.5">
@@ -338,9 +340,6 @@
   <script>
     const SUPABASE_URL = 'https://vsdrfmdprlpcshcgqvxm.supabase.co';
     const SUPABASE_KEY = 'sb_publishable_AqSPfSbaoFRQnCNiQGr3Dg_Lf5ztqvk';
-    
-    // 3. ÖZELLİK: YÖNETİCİ (ADMİN) TANIMI
-    // Giriş yapan hesabın e-postası veya rolü admin ise silme yetkisi kazanır.
     const ADMIN_EMAILS = ['admin@kiyikosesilivri.com', 'aliakgul86@gmail.com', 'eahomeconcept@gmail.com'];
 
     let db = null;
@@ -353,7 +352,7 @@
     let currentUser = null;
     let isAdmin = false;
 
-    // 4. ÖZELLİK: PWA KURULUM DESTEĞİ
+    // PWA KURULUM DESTEĞİ
     let deferredPrompt = null;
     window.addEventListener('beforeinstallprompt', (e) => {
       e.preventDefault();
@@ -396,7 +395,7 @@
       });
     }
 
-    // CANLI NÖBETÇİ ECZANE ÇEKİCİ
+    // CANLI NÖBETÇİ ECZANE ÇEKİCİ (Zaman Aşımlı & Takılmayan)
     async function fetchDutyPharmacy() {
       const textEl = document.getElementById('pharmacyText');
       const cacheKey = 'kiyikose_silivri_pharmacy_data';
@@ -411,15 +410,24 @@
       }
 
       try {
-        const response = await fetch('/api/eczane');
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), 2500); // 2.5 sn sonra beklemeyi kes
+
+        const response = await fetch('/api/eczane', { signal: controller.signal });
+        clearTimeout(timeoutId);
         const result = await response.json();
+        
         if (result && result.success && result.result && result.result.length > 0) {
           const first = result.result[0];
           localStorage.setItem(cacheKey, JSON.stringify(first));
           localStorage.setItem(cacheTimeKey, now.toString());
           renderPharmacyBadge(first);
-        } else { fallbackPharmacy(); }
-      } catch (err) { fallbackPharmacy(); }
+        } else {
+          fallbackPharmacy();
+        }
+      } catch (err) {
+        fallbackPharmacy();
+      }
     }
 
     function renderPharmacyBadge(pharmacy) {
@@ -436,19 +444,22 @@
 
     function fallbackPharmacy() {
       const textEl = document.getElementById('pharmacyText');
-      textEl.innerHTML = `Nöbetçi: <a href="https://www.google.com/maps/search/Silivri+n%C3%B6bet%C3%A7i+eczane" target="_blank" class="underline font-bold text-sky-950 hover:text-sky-700">Silivri Nöbetçi Eczaneleri</a>`;
+      textEl.innerHTML = `Nöbetçi: <a href="https://www.google.com/maps/search/Silivri+n%C3%B6bet%C3%A7i+eczane" target="_blank" class="underline font-bold text-sky-950 hover:text-sky-700">Silivri Eczaneleri (Yol Tarifi & Tel)</a>`;
     }
 
-    // CANLI VE KONUMA ÖZEL HAVA DURUMU
+    // CANLI HAVA DURUMU (Önce Anında Çeker, İzin Varsa Konuma Günceller)
     async function fetchLiveWeather() {
-      let lat = 41.0742, lon = 28.2482, label = "Silivri";
+      // 1. Önce doğrudan Silivri merkez havasını hemen göster (0 bekleme)
+      await getWeather(41.0742, 28.2482, "Silivri");
+
+      // 2. Ardından izin verilirse arka planda kullanıcının konumuna adapte et
       if (navigator.geolocation) {
         navigator.geolocation.getCurrentPosition(
-          async (pos) => { await getWeather(pos.coords.latitude, pos.coords.longitude, "Konumunuz"); },
-          async () => { await getWeather(lat, lon, label); },
-          { timeout: 5000 }
+          (pos) => { getWeather(pos.coords.latitude, pos.coords.longitude, "Konumunuz"); },
+          () => {},
+          { timeout: 3000 }
         );
-      } else { await getWeather(lat, lon, label); }
+      }
     }
 
     async function getWeather(lat, lon, label) {
@@ -461,7 +472,7 @@
           badge.innerHTML = `<i class="fa-solid fa-cloud-sun text-sky-600 mr-1"></i> ${label} ${temp}°C`;
         }
       } catch (err) {
-        badge.innerHTML = `<i class="fa-solid fa-sun text-amber-500 mr-1"></i> Silivri 18°C`;
+        badge.innerHTML = `<i class="fa-solid fa-sun text-amber-500 mr-1"></i> Silivri 17°C`;
       }
     }
 
@@ -636,7 +647,7 @@
       }
     }
 
-    // 1. ÖZELLİK: ARAMA İŞLEMLERİ
+    // ARAMA İŞLEMLERİ
     function handleSearch(val) {
       searchQuery = (val || '').toLowerCase().trim();
       document.getElementById('searchClearBtn').classList.toggle('hidden', !searchQuery);
@@ -650,7 +661,7 @@
       renderAllTabs();
     }
 
-    // 2. ÖZELLİK: PAZAR SIRALAMA FİLTRESİ
+    // PAZAR SIRALAMA FİLTRESİ
     function setMarketSort(sortType) {
       marketSortOrder = sortType;
       ['newest', 'price-asc', 'price-desc'].forEach(t => {
@@ -664,7 +675,7 @@
       renderMarket();
     }
 
-    // 3. ÖZELLİK: ADMİN SİLME İŞLEMİ
+    // ADMİN SİLME İŞLEMİ
     async function deleteItem(table, id, title) {
       if (!confirm(`"${title || 'Bu öğeyi'}" kalıcı olarak silmek istediğinize emin misiniz?`)) return;
 
@@ -682,7 +693,6 @@
       }
     }
 
-    // VERİLERİ YENİLEME
     function renderAllTabs() {
       renderPosts();
       renderMarket();
@@ -782,7 +792,6 @@
       }
     }
 
-    // 1. SEKME RENDER (Arama + Admin Silme)
     function renderPosts() {
       const container = document.getElementById('posts-container');
       let filtered = postsData.filter(p => matchesFilter(p.neighborhood));
@@ -804,7 +813,6 @@
         const comments = commentsCache[idx] || [];
         return `
         <div class="bg-white rounded-xl p-4 border border-slate-200/80 shadow-[0_1px_3px_rgba(0,0,0,0.04)] relative">
-          <!-- Admin Sil Butonu -->
           ${isAdmin ? `
             <button onclick="deleteItem('posts', '${p.id||''}', 'Not')" class="absolute top-3 right-3 text-red-500 hover:text-red-700 bg-red-50 hover:bg-red-100 p-1.5 rounded-lg text-xs" title="Yönetici Olarak Sil">
               <i class="fa-solid fa-trash-can"></i>
@@ -833,7 +841,6 @@
             </div>
           ` : ''}
 
-          <!-- Beğeni & Yorum Butonları -->
           <div class="mt-3 pt-2.5 border-t border-slate-100 flex items-center justify-between text-xs text-slate-500">
             <div class="flex items-center gap-4">
               <button onclick="handleLike('${p.id||''}', ${idx})" class="flex items-center gap-1.5 hover:text-rose-500 transition active:scale-110">
@@ -848,7 +855,6 @@
             <span class="text-[10px] text-slate-400">Silivri Meydan</span>
           </div>
 
-          <!-- Yorum Kutusu -->
           <div id="comment-box-${idx}" class="mt-3 pt-2.5 border-t border-slate-100 space-y-2 hidden">
             <div id="comments-list-${idx}" class="space-y-1.5 max-h-40 overflow-y-auto">
               ${comments.map(c => `
@@ -870,7 +876,6 @@
       }).join('');
     }
 
-    // 2. SEKME RENDER (Arama + Fiyat Sıralaması + Admin Silme)
     function renderMarket() {
       const container = document.getElementById('market-container');
       let filtered = marketData.filter(m => matchesFilter(m.neighborhood));
@@ -884,7 +889,6 @@
         );
       }
 
-      // Sıralama Mantığı
       if (marketSortOrder === 'price-asc') {
         filtered.sort((a, b) => Number(a.price) - Number(b.price));
       } else if (marketSortOrder === 'price-desc') {
@@ -902,7 +906,6 @@
 
         return `
         <div class="bg-white rounded-xl border border-slate-200 overflow-hidden shadow-sm flex flex-col justify-between relative">
-          <!-- Admin Sil Butonu -->
           ${isAdmin ? `
             <button onclick="deleteItem('market_items', '${m.id\vert{}\vert{}''}', '${m.title}')" class="absolute top-2 right-2 z-10 text-red-500 hover:text-red-700 bg-white/90 p-1.5 rounded-lg text-xs shadow" title="İlanı Sil">
               <i class="fa-solid fa-trash-can"></i>
@@ -945,7 +948,6 @@
       }).join('');
     }
 
-    // 3. SEKME RENDER (Arama + Admin Silme)
     function renderBusinesses() {
       const container = document.getElementById('business-container');
       let filtered = businessData.filter(b => matchesFilter(b.neighborhood));
