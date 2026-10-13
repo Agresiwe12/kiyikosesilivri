@@ -25,13 +25,22 @@
           <p class="text-[10px] text-slate-500 font-medium">Silivri'nin her kıyısı, her köşesi burada </p>
         </div>
       </div>
-      <button onclick="openModal()" class="bg-sky-600 hover:bg-sky-700 text-white text-xs font-semibold px-3 py-1.5 rounded-full flex items-center gap-1 shadow-sm transition">
-        <i class="fa-solid fa-plus text-xs"></i> <span id="addBtnText">Paylaş</span>
-      </button>
+      
+      <div class="flex items-center gap-2">
+        <!-- Kullanıcı Durum Alanı -->
+        <div id="userStatusArea">
+          <button onclick="openAuthModal('login')" class="text-xs font-semibold text-sky-700 bg-sky-50 hover:bg-sky-100 border border-sky-200 px-2.5 py-1.5 rounded-full transition">
+            Giriş Yap
+          </button>
+        </div>
+        <button onclick="openModal()" class="bg-sky-600 hover:bg-sky-700 text-white text-xs font-semibold px-3 py-1.5 rounded-full flex items-center gap-1 shadow-sm transition">
+          <i class="fa-solid fa-plus text-xs"></i> <span id="addBtnText">Paylaş</span>
+        </button>
+      </div>
     </div>
   </header>
 
-  <!-- Hızlı Bilgi Bandı (Nöbetçi Eczane & Hava Durumu) -->
+  <!-- Hızlı Bilgi Bandı -->
   <div class="bg-sky-50 border-b border-sky-100 px-4 py-2">
     <div class="max-w-md mx-auto flex items-center justify-between text-xs text-sky-900">
       <div class="flex items-center gap-1.5 font-medium">
@@ -45,7 +54,7 @@
   <!-- Ana İçerik Konteyneri -->
   <main class="max-w-md mx-auto px-4 pt-3">
     
-    <!-- Akıllı Mahalle & Bölge Filtreleri -->
+    <!-- Mahalle & Bölge Filtreleri -->
     <div class="flex gap-2 overflow-x-auto pb-2 scrollbar-none text-xs font-medium">
       <button onclick="filterContent('Tümü')" class="filter-btn active bg-slate-900 text-white px-3 py-1.5 rounded-full whitespace-nowrap">Tüm Silivri</button>
       <button onclick="filterContent('Merkez')" class="filter-btn bg-white border border-slate-200 text-slate-700 px-3 py-1.5 rounded-full whitespace-nowrap">Merkez / Sahil</button>
@@ -88,6 +97,69 @@
 
   </main>
 
+  <!-- ÜYELİK & GİRİŞ MODALI (T.C. KİMLİK KONTROLLÜ) -->
+  <div id="authModal" class="fixed inset-0 bg-black/50 z-50 hidden flex items-end sm:items-center justify-center p-0 sm:p-4">
+    <div class="bg-white w-full max-w-md rounded-t-2xl sm:rounded-2xl p-5 shadow-2xl animate-fade-in max-h-[90vh] overflow-y-auto">
+      <div class="flex justify-between items-center mb-3">
+        <h3 id="authModalTitle" class="font-bold text-slate-900 text-base">Silivri Sakini Girişi</h3>
+        <button onclick="closeAuthModal()" class="text-slate-400 hover:text-slate-600 text-lg">✕</button>
+      </div>
+
+      <!-- Giriş / Kayıt Geçiş Sekmesi -->
+      <div class="flex gap-2 border-b border-slate-100 pb-3 mb-3 text-xs">
+        <button type="button" onclick="switchAuthTab('login')" id="authTabBtnLogin" class="flex-1 py-1.5 rounded-lg bg-sky-50 text-sky-700 font-bold">Giriş Yap</button>
+        <button type="button" onclick="switchAuthTab('register')" id="authTabBtnRegister" class="flex-1 py-1.5 rounded-lg bg-slate-50 text-slate-600 font-medium">T.C. ile Kayıt Ol</button>
+      </div>
+
+      <!-- GİRİŞ FORMU -->
+      <form id="form-login" onsubmit="event.preventDefault(); handleLogin();" class="space-y-3 text-xs">
+        <div>
+          <label class="block font-semibold text-slate-700 mb-1">E-posta Adresi</label>
+          <input id="loginEmail" type="email" required placeholder="ornek@mail.com" class="w-full border border-slate-200 rounded-lg p-2.5 outline-none focus:border-sky-500">
+        </div>
+        <div>
+          <label class="block font-semibold text-slate-700 mb-1">Şifre</label>
+          <input id="loginPassword" type="password" required placeholder="••••••••" class="w-full border border-slate-200 rounded-lg p-2.5 outline-none focus:border-sky-500">
+        </div>
+        <button type="submit" id="loginSubmitBtn" class="w-full bg-sky-600 hover:bg-sky-700 text-white font-bold py-2.5 rounded-lg transition">Oturum Aç</button>
+      </form>
+
+      <!-- KAYIT FORMU (T.C. KİMLİK KONTROLLÜ) -->
+      <form id="form-register" onsubmit="event.preventDefault(); handleRegister();" class="space-y-3 text-xs hidden">
+        <div class="bg-blue-50 border border-blue-200 text-blue-900 rounded-lg p-2.5 text-[11px] leading-relaxed">
+          <i class="fa-solid fa-shield-halved text-blue-600 mr-1"></i> KıyıKöşe Silivri güvenliği için üyelikler resmi T.C. Kimlik algoritması ile doğrulanır.
+        </div>
+        <div>
+          <label class="block font-semibold text-slate-700 mb-1">T.C. Kimlik Numarası (11 Hane)</label>
+          <input id="regTcNo" type="text" maxlength="11" required placeholder="11 haneli kimlik numaranız" class="w-full border border-slate-200 rounded-lg p-2.5 outline-none focus:border-sky-500 tracking-wider">
+        </div>
+        <div class="grid grid-cols-2 gap-2">
+          <div>
+            <label class="block font-semibold text-slate-700 mb-1">Adınız</label>
+            <input id="regName" type="text" required placeholder="Kimlikteki adınız" class="w-full border border-slate-200 rounded-lg p-2.5 outline-none focus:border-sky-500">
+          </div>
+          <div>
+            <label class="block font-semibold text-slate-700 mb-1">Soyadınız</label>
+            <input id="regSurname" type="text" required placeholder="Soyadınız" class="w-full border border-slate-200 rounded-lg p-2.5 outline-none focus:border-sky-500">
+          </div>
+        </div>
+        <div>
+          <label class="block font-semibold text-slate-700 mb-1">Doğum Yılı</label>
+          <input id="regBirthYear" type="number" min="1920" max="2015" required placeholder="Örn: 1988" class="w-full border border-slate-200 rounded-lg p-2.5 outline-none focus:border-sky-500">
+        </div>
+        <div>
+          <label class="block font-semibold text-slate-700 mb-1">E-posta Adresi (Giriş İçin)</label>
+          <input id="regEmail" type="email" required placeholder="ornek@mail.com" class="w-full border border-slate-200 rounded-lg p-2.5 outline-none focus:border-sky-500">
+        </div>
+        <div>
+          <label class="block font-semibold text-slate-700 mb-1">Şifre Belirleyin</label>
+          <input id="regPassword" type="password" minlength="6" required placeholder="En az 6 karakter" class="w-full border border-slate-200 rounded-lg p-2.5 outline-none focus:border-sky-500">
+        </div>
+        <button type="submit" id="regSubmitBtn" class="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-2.5 rounded-lg transition">T.C. Doğrula & Kayıt Ol</button>
+      </form>
+    </div>
+  </div>
+
   <!-- Çok Amaçlı Ekleme Modalı -->
   <div id="createModal" class="fixed inset-0 bg-black/50 z-50 hidden flex items-end sm:items-center justify-center p-0 sm:p-4">
     <div class="bg-white w-full max-w-md rounded-t-2xl sm:rounded-2xl p-5 shadow-2xl animate-fade-in max-h-[90vh] overflow-y-auto">
@@ -111,9 +183,7 @@
         </div>
         <div>
           <label class="block font-semibold text-slate-700 mb-1">Mahalle / Köy</label>
-          <select id="postNeighborhood" class="w-full border border-slate-200 rounded-lg p-2.5 outline-none focus:border-sky-500 bg-white neighborhood-select">
-            <!-- 35 Mahalle Otomatik Yüklenecek -->
-          </select>
+          <select id="postNeighborhood" class="w-full border border-slate-200 rounded-lg p-2.5 outline-none focus:border-sky-500 bg-white neighborhood-select"></select>
         </div>
         <div>
           <label class="block font-semibold text-slate-700 mb-1">Mesajınız</label>
@@ -144,9 +214,7 @@
         </div>
         <div>
           <label class="block font-semibold text-slate-700 mb-1">Mahalle / Köy (Teslimat)</label>
-          <select id="itemNeighborhood" class="w-full border border-slate-200 rounded-lg p-2.5 outline-none focus:border-emerald-500 bg-white neighborhood-select">
-            <!-- 35 Mahalle Otomatik Yüklenecek -->
-          </select>
+          <select id="itemNeighborhood" class="w-full border border-slate-200 rounded-lg p-2.5 outline-none focus:border-emerald-500 bg-white neighborhood-select"></select>
         </div>
         <div>
           <label class="block font-semibold text-slate-700 mb-1">Açıklama / İletişim</label>
@@ -179,13 +247,10 @@
         </div>
         <div>
           <label class="block font-semibold text-slate-700 mb-1">Bölge / Mahalle</label>
-          <select id="bizNeighborhood" class="w-full border border-slate-200 rounded-lg p-2.5 outline-none focus:border-amber-500 bg-white neighborhood-select">
-            <!-- 35 Mahalle Otomatik Yüklenecek -->
-          </select>
+          <select id="bizNeighborhood" class="w-full border border-slate-200 rounded-lg p-2.5 outline-none focus:border-amber-500 bg-white neighborhood-select"></select>
         </div>
         <button type="submit" class="w-full bg-amber-600 hover:bg-amber-700 text-white font-bold py-2.5 rounded-lg transition">Esnaf Listesine Kaydet</button>
       </form>
-
     </div>
   </div>
 
@@ -212,7 +277,28 @@
     const SUPABASE_KEY = 'sb_publishable_AqSPfSbaoFRQnCNiQGr3Dg_Lf5ztqvk';
     const db = window.supabase ? supabase.createClient(SUPABASE_URL, SUPABASE_KEY) : null;
 
-    // SİLİVRİ'NİN TÜM MAHALLELERİ VE KIRSAL LİSTESİ
+    let currentUser = null;
+
+    // RESMİ T.C. KİMLİK DOĞRULAMA ALGORİTMASI
+    function validateTC(tc) {
+      if (!tc || tc.length !== 11 || !/^[0-9]+$/.test(tc)) return false;
+      if (tc[0] === '0') return false;
+
+      const digits = tc.split('').map(Number);
+      const oddSum = digits[0] + digits[2] + digits[4] + digits[6] + digits[8];
+      const evenSum = digits[1] + digits[3] + digits[5] + digits[7];
+
+      const tenth = ((oddSum * 7) - evenSum) % 10;
+      if (tenth < 0 ? tenth + 10 !== digits[9] : tenth !== digits[9]) return false;
+
+      let totalSum = 0;
+      for (let i = 0; i < 10; i++) totalSum += digits[i];
+      if (totalSum % 10 !== digits[10]) return false;
+
+      return true;
+    }
+
+    // SİLİVRİ MAHALLE LİSTESİ
     const SILIVRI_DISTRICTS = {
       "Merkez & Sahil": ["Piri Mehmet Paşa", "Alibey", "Yeni Mahalle", "Mimar Sinan", "Cumhuriyet", "Fatih", "Semizkumlar"],
       "Beldeler": ["Selimpaşa", "Gümüşyaka", "Ortaköy", "Kavaklı", "Değirmenköy", "Çanta", "Büyük Çavuşlu"],
@@ -222,7 +308,6 @@
         "Gazitepe", "Kadıköy", "Kurfallı", "Sayalar", "Seymen", "Yolçatı"
       ]
     };
-
     const RURAL_VILLAGES = SILIVRI_DISTRICTS["Kırsal & Köyler (Köşe)"];
 
     function populateSelects() {
@@ -246,9 +331,135 @@
 
     async function loadAllData() {
       populateSelects();
+      await checkAuthSession();
       await Promise.all([fetchPosts(), fetchMarket(), fetchBusinesses()]);
     }
 
+    // AUTH İŞLEMLERİ
+    async function checkAuthSession() {
+      if (!db) return;
+      const { data: { session } } = await db.auth.getSession();
+      if (session) {
+        currentUser = session.user;
+        updateUserUI(currentUser);
+      } else {
+        currentUser = null;
+        updateUserUI(null);
+      }
+    }
+
+    function updateUserUI(user) {
+      const area = document.getElementById('userStatusArea');
+      if (user) {
+        const fullName = user.user_metadata?.full_name || 'Doğrulanmış Sakin';
+        document.getElementById('postAuthor').value = fullName;
+        area.innerHTML = `
+          <div class="flex items-center gap-1.5 bg-emerald-50 border border-emerald-200 px-2.5 py-1 rounded-full text-xs font-semibold text-emerald-800">
+            <i class="fa-solid fa-circle-check text-sky-500"></i>
+            <span class="max-w-[80px] truncate">${fullName.split(' ')[0]}</span>
+            <button onclick="handleLogout()" class="text-slate-400 hover:text-red-500 ml-1" title="Çıkış Yap"><i class="fa-solid fa-arrow-right-from-bracket"></i></button>
+          </div>
+        `;
+      } else {
+        area.innerHTML = `
+          <button onclick="openAuthModal('login')" class="text-xs font-semibold text-sky-700 bg-sky-50 hover:bg-sky-100 border border-sky-200 px-2.5 py-1.5 rounded-full transition">
+            Giriş Yap
+          </button>
+        `;
+      }
+    }
+
+    function openAuthModal(defaultTab = 'login') {
+      document.getElementById('authModal').classList.remove('hidden');
+      switchAuthTab(defaultTab);
+    }
+    function closeAuthModal() { document.getElementById('authModal').classList.add('hidden'); }
+
+    function switchAuthTab(tab) {
+      document.getElementById('form-login').classList.toggle('hidden', tab !== 'login');
+      document.getElementById('form-register').classList.toggle('hidden', tab !== 'register');
+      document.getElementById('authTabBtnLogin').className = tab === 'login' ? 'flex-1 py-1.5 rounded-lg bg-sky-50 text-sky-700 font-bold' : 'flex-1 py-1.5 rounded-lg bg-slate-50 text-slate-600 font-medium';
+      document.getElementById('authTabBtnRegister').className = tab === 'register' ? 'flex-1 py-1.5 rounded-lg bg-emerald-50 text-emerald-700 font-bold' : 'flex-1 py-1.5 rounded-lg bg-slate-50 text-slate-600 font-medium';
+      document.getElementById('authModalTitle').innerText = tab === 'login' ? 'Silivri Sakini Girişi' : 'T.C. ile Sakin Kaydı';
+    }
+
+    async function handleRegister() {
+      const tc = document.getElementById('regTcNo').value.trim();
+      const name = document.getElementById('regName').value.trim();
+      const surname = document.getElementById('regSurname').value.trim();
+      const birthYear = document.getElementById('regBirthYear').value;
+      const email = document.getElementById('regEmail').value.trim();
+      const password = document.getElementById('regPassword').value;
+
+      // 1. T.C. Algoritma Kontrolü
+      if (!validateTC(tc)) {
+        alert("Geçersiz T.C. Kimlik Numarası! Lütfen 11 haneli kimlik numaranızı doğru girdiğinizden emin olun.");
+        return;
+      }
+
+      const btn = document.getElementById('regSubmitBtn');
+      btn.innerText = "Doğrulanıyor...";
+      btn.disabled = true;
+
+      try {
+        const { data, error } = await db.auth.signUp({
+          email: email,
+          password: password,
+          options: {
+            data: {
+              first_name: name,
+              last_name: surname,
+              full_name: `${name} ${surname}`,
+              birth_year: birthYear,
+              is_tc_verified: true
+            }
+          }
+        });
+
+        if (error) throw error;
+
+        alert("T.C. Kimlik doğrulandı ve kaydınız başarıyla oluşturuldu! Şimdi e-posta ve şifrenizle giriş yapabilirsiniz.");
+        switchAuthTab('login');
+        document.getElementById('loginEmail').value = email;
+      } catch (err) {
+        alert("Kayıt hatası: " + err.message);
+      } finally {
+        btn.innerText = "T.C. Doğrula & Kayıt Ol";
+        btn.disabled = false;
+      }
+    }
+
+    async function handleLogin() {
+      const email = document.getElementById('loginEmail').value.trim();
+      const password = document.getElementById('loginPassword').value;
+      const btn = document.getElementById('loginSubmitBtn');
+      btn.innerText = "Giriş yapılıyor...";
+      btn.disabled = true;
+
+      try {
+        const { data, error } = await db.auth.signInWithPassword({ email, password });
+        if (error) throw error;
+        currentUser = data.user;
+        updateUserUI(currentUser);
+        closeAuthModal();
+        alert("Hoş geldiniz, " + (currentUser.user_metadata?.full_name || 'Silivri Sakini') + "!");
+      } catch (err) {
+        alert("Giriş yapılamadı: " + err.message);
+      } finally {
+        btn.innerText = "Oturum Aç";
+        btn.disabled = false;
+      }
+    }
+
+    async function handleLogout() {
+      if (confirm("Çıkış yapmak istediğinize emin misiniz?")) {
+        await db.auth.signOut();
+        currentUser = null;
+        updateUserUI(null);
+      }
+    }
+
+    // VERİ ÇEKME & LİSTELEME
     async function fetchPosts() {
       try {
         const { data, error } = await db.from('posts').select('*').order('created_at', { ascending: false });
@@ -306,7 +517,13 @@
           <div class="flex items-center justify-between mb-2">
             <div class="flex items-center gap-2">
               <div class="w-7 h-7 rounded-full bg-sky-100 text-sky-700 flex items-center justify-center font-bold text-xs">${(p.category||'S')[0].toUpperCase()}</div>
-              <div><h4 class="text-xs font-bold text-slate-800 leading-tight">${p.category||'Silivri Sakini'}</h4><span class="text-[10px] text-slate-400">${p.neighborhood}</span></div>
+              <div>
+                <h4 class="text-xs font-bold text-slate-800 flex items-center gap-1">
+                  ${p.category||'Silivri Sakini'}
+                  <i class="fa-solid fa-circle-check text-sky-500 text-[10px]" title="Doğrulanmış Sakin"></i>
+                </h4>
+                <span class="text-[10px] text-slate-400">${p.neighborhood}</span>
+              </div>
             </div>
             <span class="text-[10px] bg-sky-50 text-sky-700 px-2 py-0.5 rounded-full font-semibold">${p.neighborhood}</span>
           </div>
