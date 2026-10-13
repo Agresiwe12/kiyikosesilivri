@@ -1051,4 +1051,78 @@
     function switchModalForm(formName) {
       ['meydan', 'pazar', 'esnaf'].forEach(f => {
         document.getElementById('form-' + f).classList.toggle('hidden', f !== formName);
-        const btn =
+        const btn = document.getElementById('modalBtn' + f.charAt(0).toUpperCase() + f.slice(1));
+        btn.className = f === formName ? 'flex-1 py-1.5 rounded-lg bg-sky-50 text-sky-700 font-bold' : 'flex-1 py-1.5 rounded-lg bg-slate-50 text-slate-600 font-medium';
+      });
+      document.getElementById('modalTitle').innerText = formName === 'meydan' ? 'Mahalle Notu Bırak' : formName === 'pazar' ? 'Yeni Pazar İlanı' : 'Esnaf / Usta Ekle';
+    }
+
+    async function submitPost() {
+      const name = document.getElementById('postAuthor').value;
+      const nh = document.getElementById('postNeighborhood').value;
+      const content = document.getElementById('postContent').value;
+      const file = document.getElementById('postImageInput').files[0];
+      const imageUrl = await fileToBase64(file);
+      
+      const newPost = { category: name, neighborhood: nh, content, image_url: imageUrl, likes_count: 0 };
+      postsData.unshift(newPost);
+      renderPosts();
+      closeModal();
+      document.getElementById('postContent').value = '';
+      document.getElementById('postImageInput').value = '';
+      document.getElementById('postImagePreview').classList.add('hidden');
+
+      if (db) {
+        try { await db.from('posts').insert([newPost]); } catch (e) { console.warn(e); }
+      }
+    }
+
+    async function submitMarketItem() {
+      const title = document.getElementById('itemTitle').value;
+      const price = document.getElementById('itemPrice').value;
+      const cat = document.getElementById('itemCategory').value;
+      const nh = document.getElementById('itemNeighborhood').value;
+      const phone = document.getElementById('itemPhone').value;
+      const desc = document.getElementById('itemDesc').value;
+      const file = document.getElementById('itemImageInput').files[0];
+      const imageUrl = await fileToBase64(file);
+      
+      const newItem = { title, price: Number(price), category: cat, neighborhood: nh, phone, description: desc, image_url: imageUrl };
+      marketData.unshift(newItem);
+      renderMarket();
+      closeModal();
+      document.getElementById('itemTitle').value = '';
+      document.getElementById('itemPrice').value = '';
+      document.getElementById('itemPhone').value = '';
+      document.getElementById('itemImageInput').value = '';
+      document.getElementById('itemImagePreview').classList.add('hidden');
+      switchTab('pazar');
+
+      if (db) {
+        try { await db.from('market_items').insert([newItem]); } catch (e) { console.warn(e); }
+      }
+    }
+
+    async function submitBusiness() {
+      const name = document.getElementById('bizName').value;
+      const cat = document.getElementById('bizCategory').value;
+      const phone = document.getElementById('bizPhone').value;
+      const nh = document.getElementById('bizNeighborhood').value;
+      
+      const newBiz = { name, category: cat, phone, neighborhood: nh, rating: 5.0, review_count: 1, verified: true };
+      businessData.unshift(newBiz);
+      renderBusinesses();
+      closeModal();
+      document.getElementById('bizName').value = '';
+      document.getElementById('bizPhone').value = '';
+      switchTab('esnaf');
+
+      if (db) {
+        try { await db.from('businesses').insert([newBiz]); } catch (e) { console.warn(e); }
+      }
+    }
+
+    window.onload = loadAllData;
+  </script>
+</body>
+</html>
